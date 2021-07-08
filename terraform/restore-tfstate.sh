@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Usage: ./restore-tfstate.sh <bucket> <key> <versionID>
+
 set -euo pipefail
 
 tmpfile="$(mktemp)"
@@ -9,7 +11,6 @@ function _main {
   local key="$2"
   local versionID="$3"
 
-  echo "using $tmpfile"
   aws s3api get-object --bucket "$bucket" --key "$key" --version-id "$versionID" "$tmpfile"
   aws s3api put-object --bucket "$bucket" --key "$key" --body "$tmpfile"
 
@@ -18,4 +19,5 @@ function _main {
   aws dynamodb delete-item --table terraform-locks --key "${dynamodb_key}" | jq -r '.'
 }
 
+echo "using $tmpfile"
 _main "$@"
